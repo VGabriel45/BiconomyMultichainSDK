@@ -127,7 +127,7 @@ describe("BiconomySmartAccount API Specs", () => {
     
   });
 
-  it("Should throw and error if we provide duplicate paymaster ids", async () => {
+  it("Should throw and error if we provide duplicate paymaster api keys", async () => {
     
     const configs: SmartAccountV2MultiConfig = [
       { 
@@ -142,7 +142,7 @@ describe("BiconomySmartAccount API Specs", () => {
       }
   ]
 
-    await expect(createSmartAccounts(configs)).rejects.toThrow("Duplicate paymaster ids not allowed.");
+    await expect(createSmartAccounts(configs)).rejects.toThrow("Duplicate paymaster api keys not allowed.");
     
   });
 

@@ -15,7 +15,7 @@ export const validateSmartAccountConfig = (config: SmartAccountV2Config) => {
         throw new Error("Chain ID is required.");
     }
     if (!config.paymasterApiKey) {
-        throw new Error("Paymaster ID is required.");
+        throw new Error("Paymaster API KEY is required.");
     }
 };
 
@@ -41,6 +41,6 @@ const checkDuplicateChainIds = (configs: SmartAccountV2MultiConfig) => {
 const checkDuplicatePaymasterIds = (configs: SmartAccountV2MultiConfig) => {
     const paymasterIds = configs.map(config => config.paymasterApiKey);
     if(new Set(paymasterIds).size !== paymasterIds.length) {
-        throw new Error("Duplicate paymaster ids not allowed.");
+        throw new Error("Duplicate paymaster api keys not allowed.");
     }
 };

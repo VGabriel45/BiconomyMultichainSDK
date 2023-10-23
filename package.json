@@ -21,9 +21,12 @@
     "dependencies": {
         "@biconomy/account": "^3.1.0",
         "@biconomy/bundler": "^3.1.0",
+        "@biconomy/core-types": "^3.1.0",
         "@biconomy/modules": "^3.1.0",
         "@biconomy/paymaster": "^3.1.0",
+        "@ethersproject/providers": "^5.7.2",
         "dotenv": "^16.3.1",
+        "ethers": "^6.8.0",
         "hardhat": "^2.18.2",
         "pnpm": "^8.9.2",
         "winston": "^3.11.0"

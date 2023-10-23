@@ -24,6 +24,7 @@
         "@biconomy/modules": "^3.1.0",
         "@biconomy/paymaster": "^3.1.0",
         "dotenv": "^16.3.1",
+        "pnpm": "^8.9.2",
         "winston": "^3.11.0"
     }
 }

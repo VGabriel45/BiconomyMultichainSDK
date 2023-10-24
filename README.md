@@ -176,6 +176,7 @@ In the sendEmptyTx function:
 - Similar to the prefundSmartAccount function, while there aren't explicit error throws, errors related to Ethereum transactions can arise. This includes issues with building the user operation, sending the user operation, or waiting for the transaction.
 
 ***Simple Workflow Schema***
+
 <img src="./assets/Graph.drawio.png" width="400" height="600" alt="SimpleSchema">
 
 This project is licensed under the MIT License. See the [LICENSE.md](./LICENSE.md) file for details.

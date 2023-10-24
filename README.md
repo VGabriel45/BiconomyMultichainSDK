@@ -18,6 +18,7 @@ npm install biconomy-multichain-accounts-wrapper
 Usage
 
 1.SDK Integration
+
 Import the necessary modules from the SDK:
 
 ```javascript
@@ -25,6 +26,7 @@ import { createSmartAccounts, ChainId, SmartAccountV2MultiConfig } from 'biconom
 ```
 
 2.Configuration
+
 Define the configuration parameters:
 ```javascript
 const config: SmartAccountV2Config = {
@@ -38,6 +40,7 @@ const config: SmartAccountV2Config = {
 ```
 
 3.Example Workflow
+
 To create and deploy smart accounts on-chain:
 
 If the ***deployOnChain*** field is omitted, the smart account will be instantiated but not deployed. Deployment will be triggered upon the first ***UserOperation***.

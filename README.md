@@ -129,8 +129,10 @@ configs: Array of configurations for creating smart accounts.
 Returns: Promise that resolves to an array of created smart accounts.
 
 ***Types***
-- SmartAccountV2Config
+- SmartAccountV2Config 
 - SmartAccountV2MultiConfig
+- BaseSmartAccountConfigOptionals
+- BiconomySmartAccountV2ConfigOptionals
 
 ***ChainId***
 

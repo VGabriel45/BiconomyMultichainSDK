@@ -102,6 +102,22 @@ console.log("transaction detail below")
 console.log(transactionDetail)
 ```
 
+If you wish to deploy another smart account from the same private key, use ***index*** field, it is an extra salt that allows to deploy more accounts for same EOA (default 0)
+
+```javascript
+const configs: SmartAccountV2MultiConfig = [
+        { 
+          signer: mumbaiSigner,
+          chainId: ChainId.POLYGON_MUMBAI,
+          paymasterApiKey: {MUMBAI_PAYMASTER_ID},
+          deployOnChain: {
+            prefundAmount: ethers.utils.parseEther("0.01")
+          },
+          index: 1
+        }
+    ]
+```
+
 ***Functions***
 - createSmartAccounts(configs: SmartAccountV2MultiConfig[]): Promise<SmartAccount[]>
     Parameters:

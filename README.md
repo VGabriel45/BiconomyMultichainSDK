@@ -135,4 +135,47 @@ Enum for supported blockchain chains. Examples:
 - POLYGON_MUMBAI
 - GOERLI
 
+***Troubleshooting***
+
+In the validateSmartAccountConfig function:
+
+- "Signer is required.": This error is thrown if the signer property is not provided in the SmartAccountV2Config configuration object.
+- "Chain ID is required.": This error is thrown if the chainId property is not provided in the SmartAccountV2Config configuration object.
+- "Paymaster API KEY is required.": This error is thrown if the paymasterApiKey property is not provided in the SmartAccountV2Config configuration object.
+
+In the checkDuplicate function:
+
+- This function internally calls two other functions to check for duplicates: checkDuplicateChainIds and checkDuplicatePaymasterIds.
+
+In the checkDuplicateChainIds function:
+
+- "Duplicate chain ids not allowed.": This error is thrown if there are duplicate chainId values in the provided SmartAccountV2MultiConfig configuration array.
+
+In the checkDuplicatePaymasterIds function:
+
+- "Duplicate paymaster api keys not allowed.": This error is thrown if there are duplicate paymasterApiKey values in the provided SmartAccountV2MultiConfig configuration array.
+
+In the createSmartAccount function:
+
+- "Error on initializing module: [error message]": This error is thrown if there's an issue initializing the MultiChainValidationModule.
+- "Error on initializing bundler: [error message]": This error is thrown if there's an issue initializing the Bundler.
+- "Error on initializing paymaster: [error message]": This error is thrown if there's an issue initializing the BiconomyPaymaster.
+- "Error on initializing biconomySmartAccount: [error message]": This error is thrown if there's an issue initializing the BiconomySmartAccountV2.
+
+In the createSmartAccounts function:
+
+- This function internally calls the checkDuplicate function, which can throw errors related to duplicate values (as mentioned in the previous list).
+- Additionally, since this function calls the createSmartAccount function for each configuration, any error that can be thrown by createSmartAccount can also be thrown here.
+
+In the prefundSmartAccount function:
+
+- While the function itself doesn't have explicit error throws, any error related to Ethereum transactions, such as insufficient funds, gas issues, or network errors, can arise when sending the transaction.
+
+In the sendEmptyTx function:
+
+- Similar to the prefundSmartAccount function, while there aren't explicit error throws, errors related to Ethereum transactions can arise. This includes issues with building the user operation, sending the user operation, or waiting for the transaction.
+
+***Simple Workflow Schema***
+<img src="./assets/Graph.drawio.png" width="400" height="600" alt="SimpleSchema">
+
 This project is licensed under the MIT License. See the [LICENSE.md](./LICENSE.md) file for details.

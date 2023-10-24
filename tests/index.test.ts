@@ -1,7 +1,7 @@
 import { BiconomySmartAccountV2 } from "@biconomy/account";
 import {createSmartAccounts} from "../src/index";
 import { Wallet, ethers, providers } from 'ethers';
-import {ChainId, SmartAccountV2MultiConfig } from "../src/types/CreateSmartAccountConfig";
+import {ChainId, SmartAccountV2Config, SmartAccountV2MultiConfig } from "../src/types/CreateSmartAccountConfig";
 require('dotenv').config();
 
 describe("BiconomySmartAccount API Specs", () => {
@@ -146,38 +146,36 @@ describe("BiconomySmartAccount API Specs", () => {
     
   });
 
-  // it("Should create a user operation tx", async () => {
+  it("Should create a user operation tx", async () => {
 
-  //   const config: SmartAccountV2Config = 
-  //       { 
-  //         chainId: ChainId.POLYGON_MUMBAI,
-  //         paymasterApiKey: process.env.MUMBAI_PAYMASTER_ID!,
-  //         optional: {
-  //           ACCOUNT_INDEX: 1
-  //         }
-  //       }
+    const config: SmartAccountV2MultiConfig = 
+       [ { 
+          signer: mumbaiSigner,
+          chainId: ChainId.POLYGON_MUMBAI,
+          paymasterApiKey: process.env.MUMBAI_PAYMASTER_ID!,
+        }]
 
-  //   const smartAccount = await createSmartAccountAndDeploy(
-  //     signer,
-  //     config,
-  //     ethers.utils.parseEther("0.001"),
-  //   );
+    const smartAccounts = await createSmartAccounts(
+      config,
+    );
     
-  //   const transaction = {
-  //     to: await smartAccount.getAccountAddress(),
-  //     data: '0x',
-  //   }
+    const smartAccount = smartAccounts[0]!;
   
-  //   const userOp = await smartAccount.buildUserOp([transaction])
-  //   userOp.paymasterAndData = "0x"
+    const transaction = {
+      to: await smartAccount.getAccountAddress() || "",
+      data: '0x',
+    }
   
-  //   const userOpResponse = await smartAccount.sendUserOp(userOp)
+    const userOp = await smartAccount?.buildUserOp([transaction])
+    userOp.paymasterAndData = "0x"
   
-  //   const transactionDetail = await userOpResponse.wait()
+    const userOpResponse = await smartAccount.sendUserOp(userOp)
   
-  //   console.log("transaction detail below")
-  //   console.log(transactionDetail)
+    const transactionDetail = await userOpResponse.wait()
   
-  // }, 50000);
+    console.log("transaction detail below")
+    console.log(transactionDetail)
+  
+  }, 50000);
 
 });

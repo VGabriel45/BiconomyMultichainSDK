@@ -33,9 +33,8 @@ const createSmartAccount = async (config: SmartAccountV2Config) => {
     const signer: ethers.Signer = config.signer;
     validateSmartAccountConfig(config);
 
-    let module: MultiChainValidationModule, bundler: IBundler, biconomySmartAccount: BiconomySmartAccountV2;
-    let paymaster: IHybridPaymaster<SponsorUserOperationDto> | undefined;
-    
+    let module: MultiChainValidationModule, bundler: IBundler, paymaster: IHybridPaymaster<SponsorUserOperationDto>, biconomySmartAccount: BiconomySmartAccountV2;
+
     try {
         console.info(`Initializing module with address: ${DEFAULT_MULTICHAIN_MODULE}`);
         module = await MultiChainValidationModule.create({
@@ -59,16 +58,14 @@ const createSmartAccount = async (config: SmartAccountV2Config) => {
     }
    
     try {
-        if(config.paymasterApiKey){
-            console.info(`Initializing paymaster with url: https://paymaster.biconomy.io/api/v1/${config.chainId}/${config.paymasterApiKey}`);
-            paymaster = new BiconomyPaymaster({
-                paymasterUrl: `https://paymaster.biconomy.io/api/v1/${config.chainId}/${config.paymasterApiKey}`,
-            })
-        } 
+        console.info(`Initializing paymaster with url: https://paymaster.biconomy.io/api/v1/${config.chainId}/${config.paymasterApiKey}`);
+        paymaster = new BiconomyPaymaster({
+            paymasterUrl: `https://paymaster.biconomy.io/api/v1/${config.chainId}/${config.paymasterApiKey}`,
+        })
     } catch (error) {
         throw new Error(`Error on initializing paymaster: ${error}`);
     }
-   
+  
     try {
         console.info(`Initializing biconomySmartAccount with chainId: ${config.chainId}`);
         biconomySmartAccount = await BiconomySmartAccountV2.create({

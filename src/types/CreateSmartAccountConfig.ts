@@ -72,7 +72,7 @@ export interface BiconomySmartAccountV2ConfigOptionals extends BaseSmartAccountC
 export type SmartAccountV2Config = BiconomySmartAccountV2ConfigOptionals & {
   chainId: ChainId;
   signer: Signer,
-  paymasterApiKey: string;
+  paymasterApiKey?: string;
   deployOnChain?: {
     prefundAmount: ethers.BigNumber;
   };

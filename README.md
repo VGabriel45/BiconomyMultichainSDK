@@ -37,12 +37,12 @@ const config: SmartAccountV2Config = {
 };
 ```
 
-3. Example Workflow
+3.Example Workflow
 To create and deploy smart accounts on-chain:
 
-If the deployOnChain field is omitted, the smart account will be instantiated but not deployed. Deployment will be triggered upon the first UserOperation.
+If the ***deployOnChain*** field is omitted, the smart account will be instantiated but not deployed. Deployment will be triggered upon the first ***UserOperation***.
 
-The optional deployOnChain field, if provided, mandates the prefundAmount—the gas amount allocated for smart account deployment. Ensure adequate gas provisioning for each chain.
+The optional ***deployOnChain*** field, if provided, requires ***prefundAmount***, which is needed for contract deployment and running transactions if no paymaster is used. Ensure adequate gas provisioning for each chain.
 
 ```javascript
 
@@ -110,17 +110,10 @@ console.log(transactionDetail)
 
 ***Types***
 - SmartAccountV2Config
-    signer: Signer instance for the blockchain.
-    chainId: Chain ID from the ChainId enum.
-    paymasterApiKey: API key for the paymaster.
-    deployOnChain: Optional configuration for deploying the smart account on-chain.
 - SmartAccountV2MultiConfig
-    signer: Signer instance for the blockchain.
-    chainId: Chain ID from the ChainId enum.
-    paymasterApiKey: API key for the paymaster.
-    deployOnChain: Optional configuration for deploying the smart account on-chain.
 
 ***ChainId***
+
 Enum for supported blockchain chains. Examples:
 - POLYGON_MUMBAI
 - GOERLI

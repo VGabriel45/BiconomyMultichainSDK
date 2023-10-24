@@ -33,9 +33,9 @@ const config: SmartAccountV2Config = {
 };
 ```
 
-### Example
+### Example 1
 
-Create your configs array.
+Create your configs array to create smart accounts.
 
 ```javascript
 const configs: SmartAccountV2MultiConfig = [
@@ -48,6 +48,42 @@ const configs: SmartAccountV2MultiConfig = [
           signer: goerliSigner,
           chainId: ChainId.GOERLI,
           paymasterApiKey: {BSC_TESTNET_PAYMASTER_ID},
+        }
+    ]
+```
+
+Provide configs array as a parameter.
+
+```javascript
+const smartAccounts = await createSmartAccounts(
+    configs
+);
+```
+
+### Example 2
+
+Create your configs array to create and deploy smart accounts on chain.
+
+Provide ***deployOnChain*** which is an optinal field, it will require ***prefundAmount*** which is the amount of gas you want to send to the smart account
+for deployment (Make sure you send enough for each chain).
+
+```javascript
+const configs: SmartAccountV2MultiConfig = [
+        { 
+          signer: mumbaiSigner,
+          chainId: ChainId.POLYGON_MUMBAI,
+          paymasterApiKey: {MUMBAI_PAYMASTER_ID},
+          deployOnChain: {
+            prefundAmount: ethers.utils.parseEther("0.01")
+          }
+        },
+        { 
+          signer: goerliSigner,
+          chainId: ChainId.GOERLI,
+          paymasterApiKey: {BSC_TESTNET_PAYMASTER_ID},
+          deployOnChain: {
+            prefundAmount: ethers.utils.parseEther("0.1")
+          }
         }
     ]
 ```

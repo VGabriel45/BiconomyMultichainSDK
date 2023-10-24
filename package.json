@@ -1,6 +1,6 @@
 {
     "name": "biconomy-multichain-accounts-wrapper",
-    "version": "2.0.10",
+    "version": "2.0.11",
     "license": "MIT",
     "main": "dist/index.js",
     "module": "dist/index.mjs",

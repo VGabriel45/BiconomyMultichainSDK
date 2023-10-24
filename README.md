@@ -17,7 +17,7 @@ npm install biconomy-multichain-accounts-wrapper
 
 Usage
 
-1. SDK Integration
+1.SDK Integration
 Import the necessary modules from the SDK:
 
 ```javascript
@@ -119,10 +119,11 @@ const configs: SmartAccountV2MultiConfig = [
 ```
 
 ***Functions***
-- createSmartAccounts(configs: SmartAccountV2MultiConfig[]): Promise<SmartAccount[]>
-    Parameters:
-    configs: Array of configurations for creating smart accounts.
-    Returns: Promise that resolves to an array of created smart accounts.
+- ***createSmartAccounts***(configs: SmartAccountV2MultiConfig[]): Promise<SmartAccount[]>
+
+Parameters:
+configs: Array of configurations for creating smart accounts.
+Returns: Promise that resolves to an array of created smart accounts.
 
 ***Types***
 - SmartAccountV2Config

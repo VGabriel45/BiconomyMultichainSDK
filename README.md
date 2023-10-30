@@ -22,7 +22,7 @@ Usage
 Import the necessary modules from the SDK:
 
 ```javascript
-import { createSmartAccounts, ChainId, SmartAccountV2MultiConfig } from 'biconomy-multichain-accounts-wrapper';
+import { createSmartAccountMultichain, ChainId, SmartAccountV2MultiConfig } from 'biconomy-multichain-accounts-wrapper';
 ```
 
 2.Configuration
@@ -78,7 +78,7 @@ const configs: SmartAccountV2MultiConfig = [
 Get the created smart accounts.
 
 ```javascript
-const smartAccounts = await createSmartAccounts(
+const smartAccounts = await createSmartAccountMultichain(
     configs
 );
 ```
@@ -122,7 +122,7 @@ const configs: SmartAccountV2MultiConfig = [
 ```
 
 ***Functions***
-- ***createSmartAccounts***(configs: SmartAccountV2MultiConfig[]): Promise<SmartAccount[]>
+- ***createSmartAccountMultichain***(configs: SmartAccountV2MultiConfig[]): Promise<SmartAccount[]>
 
 Parameters:
 configs: Array of configurations for creating smart accounts.
@@ -167,7 +167,7 @@ In the createSmartAccount function:
 - "Error on initializing paymaster: [error message]": This error is thrown if there's an issue initializing the BiconomyPaymaster.
 - "Error on initializing biconomySmartAccount: [error message]": This error is thrown if there's an issue initializing the BiconomySmartAccountV2.
 
-In the createSmartAccounts function:
+In the createSmartAccountMultichain function:
 
 - This function internally calls the checkDuplicate function, which can throw errors related to duplicate values (as mentioned in the previous list).
 - Additionally, since this function calls the createSmartAccount function for each configuration, any error that can be thrown by createSmartAccount can also be thrown here.

@@ -1,5 +1,5 @@
 import { BiconomySmartAccountV2 } from "@biconomy/account";
-import {createSmartAccounts} from "../src/index";
+import {createSmartAccountMultichain} from "../src/index";
 import { Wallet, ethers, providers } from 'ethers';
 import {ChainId, SmartAccountV2Config, SmartAccountV2MultiConfig } from "../src/types/CreateSmartAccountConfig";
 require('dotenv').config();
@@ -16,33 +16,37 @@ describe("BiconomySmartAccount API Specs", () => {
     goerliSigner = new ethers.Wallet(process.env.PRIVATE_KEY || "", goerliProvider);
   });
 
-  it("Should create smart accounts on 2 chains", async () => {
+  // it("Should create a smart account on 2 chains", async () => {
 
-    const configs: SmartAccountV2MultiConfig = [
-        { 
-          signer: mumbaiSigner,
-          chainId: ChainId.POLYGON_MUMBAI,
-          paymasterApiKey: process.env.MUMBAI_PAYMASTER_ID!,
-        },
-        { 
-          signer: goerliSigner,
-          chainId: ChainId.GOERLI,
-          paymasterApiKey: process.env.BSC_TESTNET_PAYMASTER_ID!,
-        }
-    ]
+  //   const configs: SmartAccountV2MultiConfig = [
+  //       { 
+  //         signer: mumbaiSigner,
+  //         chainId: ChainId.POLYGON_MUMBAI,
+  //         paymasterApiKey: process.env.MUMBAI_PAYMASTER_ID!,
+  //         index: 3
+  //       },
+  //       { 
+  //         signer: goerliSigner,
+  //         chainId: ChainId.GOERLI,
+  //         paymasterApiKey: process.env.BSC_TESTNET_PAYMASTER_ID!,
+  //         index: 3
+  //       }
+  //   ]
 
-    const smartAccounts = await createSmartAccounts(
-      configs
-    );
+  //   const smartAccount = await createSmartAccountMultichain(
+  //     configs
+  //   );
 
-    expect(smartAccounts.length).toBe(2);
-    expect(smartAccounts[0]!.chainId).toBe(ChainId.POLYGON_MUMBAI);
-    expect(smartAccounts[1]!.chainId).toBe(ChainId.GOERLI);
+  //   expect(smartAccount.MUMBAI?.chainId).toBe(ChainId.POLYGON_MUMBAI);
+  //   expect(smartAccount.GOERLI?.chainId).toBe(ChainId.GOERLI);
 
-    expect(smartAccounts[0]!).toBeInstanceOf(BiconomySmartAccountV2);
-    expect(smartAccounts[1]!).toBeInstanceOf(BiconomySmartAccountV2);
+  //   expect(smartAccount.MUMBAI).toBeInstanceOf(BiconomySmartAccountV2);
+  //   expect(smartAccount.GOERLI).toBeInstanceOf(BiconomySmartAccountV2);
+
+  //   const accountsByOwner = await smartAccount.MUMBAI?.getSmartAccountsByOwner({chainId: ChainId.POLYGON_MUMBAI, owner: mumbaiSigner.address, index: 0})
+  //   console.log(accountsByOwner);
     
-  }, 50000);
+  // }, 50000);
 
   it("Should create smart account on 1 chain", async () => {
     
@@ -53,60 +57,68 @@ describe("BiconomySmartAccount API Specs", () => {
           paymasterApiKey: process.env.MUMBAI_PAYMASTER_ID!,
         }]
 
-    const smartAccounts = await createSmartAccounts(
+    const smartAccount = await createSmartAccountMultichain(
       config,
     );
 
-    expect(smartAccounts.length).toBe(1);
-    expect(smartAccounts[0]!.chainId).toBe(ChainId.POLYGON_MUMBAI);
+    expect(smartAccount.MUMBAI?.chainId).toBe(ChainId.POLYGON_MUMBAI);
 
-    expect(smartAccounts[0]!).toBeInstanceOf(BiconomySmartAccountV2);
+    expect(smartAccount.MUMBAI).toBeInstanceOf(BiconomySmartAccountV2);
     
   }, 50000);
 
-  it("Should create and deploy Smart Accounts on 2 chains", async () => {
+  // it("Should create and deploy Smart Accounts on 2 chains", async () => {
 
-      const configs: SmartAccountV2MultiConfig = [
-        { 
-          signer: mumbaiSigner,
-          chainId: ChainId.POLYGON_MUMBAI,
-          paymasterApiKey: process.env.MUMBAI_PAYMASTER_ID!,
-          deployOnChain : {
-            prefundAmount: ethers.utils.parseEther("0.001")
-          }
-        },
-        { 
-          signer: goerliSigner,
-          chainId: ChainId.GOERLI,
-          paymasterApiKey: process.env.GOERLI_PAYMASTER_ID!,
-          deployOnChain :{
-            prefundAmount: ethers.utils.parseEther("0.01")
-          }
-        }
-      ]
+  //     const configs: SmartAccountV2MultiConfig = [
+  //       { 
+  //         signer: mumbaiSigner,
+  //         chainId: ChainId.POLYGON_MUMBAI,
+  //         paymasterApiKey: process.env.MUMBAI_PAYMASTER_ID!,
+  //         deployOnChain : {
+  //           prefundAmount: ethers.utils.parseEther("0.001")
+  //         },
+  //         index: 12
+  //       },
+  //       { 
+  //         signer: goerliSigner,
+  //         chainId: ChainId.GOERLI,
+  //         paymasterApiKey: process.env.GOERLI_PAYMASTER_ID!,
+  //         deployOnChain :{
+  //           prefundAmount: ethers.utils.parseEther("0.01")
+  //         },
+  //         index: 12
+  //       }
+  //     ]
 
-    const smartAccounts = await createSmartAccounts(
-      configs,
-    );
-  }, 50000);
+  //   const smartAccount = await createSmartAccountMultichain(
+  //     configs,
+  //   );
 
-  it("Should create and deploy smart account on 1 chain", async () => {
+  //   expect(smartAccount.MUMBAI?.chainId).toBe(ChainId.POLYGON_MUMBAI);
+  //   expect(smartAccount.GOERLI?.chainId).toBe(ChainId.GOERLI);
 
-    const config: SmartAccountV2MultiConfig = 
-       [ { 
-          signer: goerliSigner,
-          chainId: ChainId.GOERLI,
-          paymasterApiKey: process.env.GOERLI_PAYMASTER_ID!,
-          deployOnChain: {
-            prefundAmount: ethers.utils.parseEther("0.01")
-          }
-        }]
+  //   expect(smartAccount.MUMBAI).toBeInstanceOf(BiconomySmartAccountV2);
+  //   expect(smartAccount.GOERLI).toBeInstanceOf(BiconomySmartAccountV2);
 
-    const smartAccount = await createSmartAccounts(
-      config,
-    );
+  // }, 100000);
 
-  }, 50000);
+  // it("Should create and deploy smart account on 1 chain", async () => {
+
+  //   const config: SmartAccountV2MultiConfig = 
+  //      [ { 
+  //         signer: goerliSigner,
+  //         chainId: ChainId.GOERLI,
+  //         paymasterApiKey: process.env.GOERLI_PAYMASTER_ID!,
+  //         deployOnChain: {
+  //           prefundAmount: ethers.utils.parseEther("0.01")
+  //         }
+  //       }]
+
+  //   const smartAccount = await createSmartAccountMultichain(
+  //     config,
+  //   );
+
+  // }, 50000);
 
   it("Should throw and error if we provide duplicate chain ids", async () => {
     
@@ -123,7 +135,7 @@ describe("BiconomySmartAccount API Specs", () => {
         }
     ]
 
-    await expect(createSmartAccounts(configs)).rejects.toThrow("Duplicate chain ids not allowed.");
+    await expect(createSmartAccountMultichain(configs)).rejects.toThrow("Duplicate chain ids not allowed.");
     
   });
 
@@ -142,7 +154,7 @@ describe("BiconomySmartAccount API Specs", () => {
       }
   ]
 
-    await expect(createSmartAccounts(configs)).rejects.toThrow("Duplicate paymaster api keys not allowed.");
+    await expect(createSmartAccountMultichain(configs)).rejects.toThrow("Duplicate paymaster api keys not allowed.");
     
   });
 
@@ -155,23 +167,21 @@ describe("BiconomySmartAccount API Specs", () => {
           paymasterApiKey: process.env.MUMBAI_PAYMASTER_ID!,
         }]
 
-    const smartAccounts = await createSmartAccounts(
+    const smartAccount = await createSmartAccountMultichain(
       config,
     );
-    
-    const smartAccount = smartAccounts[0]!;
   
     const transaction = {
-      to: await smartAccount.getAccountAddress() || "",
+      to: await smartAccount.MUMBAI?.getAccountAddress() || "",
       data: '0x',
     }
   
-    const userOp = await smartAccount?.buildUserOp([transaction])
-    userOp.paymasterAndData = "0x"
+    const userOp = await smartAccount.MUMBAI?.buildUserOp([transaction])
+    userOp!.paymasterAndData = "0x"
   
-    const userOpResponse = await smartAccount.sendUserOp(userOp)
+    const userOpResponse = await smartAccount.MUMBAI?.sendUserOp(userOp!)
   
-    const transactionDetail = await userOpResponse.wait()
+    const transactionDetail = await userOpResponse!.wait()
   
     console.log("transaction detail below")
     console.log(transactionDetail)

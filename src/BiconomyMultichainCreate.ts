@@ -9,7 +9,7 @@ import { IBundler, Bundler } from '@biconomy/bundler'
 import { BiconomyPaymaster, IHybridPaymaster, SponsorUserOperationDto } from '@biconomy/paymaster'
 import { ethers } from "ethers";
 
-import {SmartAccountV2Config, SmartAccountV2MultiConfig} from './types/CreateSmartAccountConfig';
+import {ChainId, SmartAccountV2Config, SmartAccountV2MultiConfig} from './types/CreateSmartAccountConfig';
 import { defaultBundleUrlByChainId } from "./utils/utils";
 import { checkDuplicate, validateSmartAccountConfig } from "./utils/validation";
 
@@ -89,11 +89,12 @@ const createSmartAccount = async (config: SmartAccountV2Config) => {
 
     await biconomySmartAccount.init();
     const accountAddress = await biconomySmartAccount.getAccountAddress();
-    console.info(`Smart account created on chain ${config.chainId} with address: ${await biconomySmartAccount.getAccountAddress()}`);
+    console.info(`Smart account instance created for chain ${config.chainId} with address: ${await biconomySmartAccount.getAccountAddress()}`);
     
     if(config.deployOnChain){
         const prefundAmount = config.deployOnChain.prefundAmount;
         const isDeployed = await biconomySmartAccount.isAccountDeployed(accountAddress)
+        console.log(`Smart account with address ${accountAddress} at chaid id ${config.chainId} is deployed: ${isDeployed}`);
         if(!isDeployed){
             console.log('Deploying smart account...');
             await prefundSmartAccount(signer, prefundAmount, biconomySmartAccount);
@@ -114,26 +115,28 @@ const createSmartAccount = async (config: SmartAccountV2Config) => {
  * This uses Biconomy's SDK to create BiconomySmartAccountV2 instances, if you provide "deployOnChain" property, the smart account will also be deployed.
  * 
  * @example
- * const accounts = await createSmartAccounts(configs);
+ * const accounts = await createSmartAccountMultichain(configs);
  * 
  * @param configs - An array of configurations for creating the smart accounts.
- * @returns A promise that resolves to an array of created Biconomy smart accounts.
+ * @returns An object with the created smart accounts on each chain.
  */
-export const createSmartAccounts = async (configs: SmartAccountV2MultiConfig) => {
+export const createSmartAccountMultichain = async (configs: SmartAccountV2MultiConfig) => {
 
     checkDuplicate(configs);
 
     const promises = configs.map(async (config) => {
-        return createSmartAccount({
-            signer: config.signer,
-            chainId: config.chainId,
-            paymasterApiKey: config.paymasterApiKey,
-        }).then(account => (account));
+        return createSmartAccount(
+            config
+        ).then(account => (account));
     });
 
-    return await Promise.all(promises);
+    const resolvedPromises = await Promise.all(promises);
+    const createdSmartAccount = {
+        MUMBAI: resolvedPromises.find((account) => account.chainId === ChainId.POLYGON_MUMBAI),
+        GOERLI: resolvedPromises.find((account) => account.chainId === ChainId.GOERLI),
+    }
+    return createdSmartAccount;
 }
-
 
 /**
  * Prefunds a Smart Account with a specified amount.
@@ -155,7 +158,7 @@ async function prefundSmartAccount(signer: ethers.Signer, prefundAmount: ethers.
     } 
 
     const tx = await signer.sendTransaction(prefund);
-    await tx.wait(1);
+    await tx.wait(5);
 
     return tx;
 }

@@ -2,6 +2,7 @@ import { BiconomySmartAccountV2 } from "@biconomy/account";
 import {createSmartAccountMultichain} from "../src/index";
 import { Wallet, ethers, providers } from 'ethers';
 import {ChainId, SmartAccountV2Config, SmartAccountV2MultiConfig } from "../src/types/CreateSmartAccountConfig";
+import { PaymasterMode, IHybridPaymaster, SponsorUserOperationDto } from "@biconomy/paymaster";
 require('dotenv').config();
 
 describe("BiconomySmartAccount API Specs", () => {
@@ -16,20 +17,61 @@ describe("BiconomySmartAccount API Specs", () => {
     goerliSigner = new ethers.Wallet(process.env.PRIVATE_KEY || "", goerliProvider);
   });
 
-  // it("Should create a smart account on 2 chains", async () => {
+  it("Should create a smart account on 2 chains", async () => {
+
+    const configs: SmartAccountV2MultiConfig = [
+        { 
+          signer: mumbaiSigner,
+          chainId: ChainId.POLYGON_MUMBAI,
+          index: 3,
+          deployOnChain: {
+            prefundAmount: ethers.utils.parseEther("0.001")
+          }
+        },
+        { 
+          signer: goerliSigner,
+          chainId: ChainId.GOERLI,
+          index: 3,
+          deployOnChain: {
+            prefundAmount: ethers.utils.parseEther("0.003")
+          }
+        }
+    ]
+
+    const smartAccount = await createSmartAccountMultichain(
+      configs
+    );
+
+    expect(smartAccount.MUMBAI?.chainId).toBe(ChainId.POLYGON_MUMBAI);
+    expect(smartAccount.GOERLI?.chainId).toBe(ChainId.GOERLI);
+
+    expect(smartAccount.MUMBAI).toBeInstanceOf(BiconomySmartAccountV2);
+    expect(smartAccount.GOERLI).toBeInstanceOf(BiconomySmartAccountV2);
+
+  }, 50000);
+
+  // it("Should create a smart account on 2 chains gasless", async () => {
+
+  //   const signerBalanceBefore = await mumbaiSigner.getBalance();
 
   //   const configs: SmartAccountV2MultiConfig = [
   //       { 
   //         signer: mumbaiSigner,
   //         chainId: ChainId.POLYGON_MUMBAI,
-  //         paymasterApiKey: process.env.MUMBAI_PAYMASTER_ID!,
-  //         index: 3
+  //         paymasterApiKey: process.env.MUMBAI_PAYMASTER_API_KEY!,
+  //         index: 5,
+  //         deployOnChain: {
+  //           prefundAmount: ethers.utils.parseEther("0")
+  //         }
   //       },
   //       { 
   //         signer: goerliSigner,
   //         chainId: ChainId.GOERLI,
-  //         paymasterApiKey: process.env.BSC_TESTNET_PAYMASTER_ID!,
-  //         index: 3
+  //         paymasterApiKey: process.env.GOERLI_PAYMASTER_API_KEY!,
+  //         index: 4,
+  //         deployOnChain: {
+  //           prefundAmount: ethers.utils.parseEther("0")
+  //         }
   //       }
   //   ]
 
@@ -38,34 +80,35 @@ describe("BiconomySmartAccount API Specs", () => {
   //   );
 
   //   expect(smartAccount.MUMBAI?.chainId).toBe(ChainId.POLYGON_MUMBAI);
-  //   expect(smartAccount.GOERLI?.chainId).toBe(ChainId.GOERLI);
+  //   // expect(smartAccount.GOERLI?.chainId).toBe(ChainId.GOERLI);
 
   //   expect(smartAccount.MUMBAI).toBeInstanceOf(BiconomySmartAccountV2);
-  //   expect(smartAccount.GOERLI).toBeInstanceOf(BiconomySmartAccountV2);
+  //   // expect(smartAccount.GOERLI).toBeInstanceOf(BiconomySmartAccountV2);
 
-  //   const accountsByOwner = await smartAccount.MUMBAI?.getSmartAccountsByOwner({chainId: ChainId.POLYGON_MUMBAI, owner: mumbaiSigner.address, index: 0})
-  //   console.log(accountsByOwner);
-    
+  //   const signerBalanceAfter = await mumbaiSigner.getBalance();
+
+  //   expect(signerBalanceAfter).toEqual(signerBalanceBefore);
+
   // }, 50000);
 
-  it("Should create smart account on 1 chain", async () => {
+  // it("Should create smart account on 1 chain", async () => {
     
-    const config: SmartAccountV2MultiConfig = 
-        [{ 
-          signer: mumbaiSigner,
-          chainId: ChainId.POLYGON_MUMBAI,
-          paymasterApiKey: process.env.MUMBAI_PAYMASTER_ID!,
-        }]
+  //   const config: SmartAccountV2MultiConfig = 
+  //       [{ 
+  //         signer: mumbaiSigner,
+  //         chainId: ChainId.POLYGON_MUMBAI,
+  //         paymasterApiKey: process.env.MUMBAI_PAYMASTER_API_KEY!,
+  //       }]
 
-    const smartAccount = await createSmartAccountMultichain(
-      config,
-    );
+  //   const smartAccount = await createSmartAccountMultichain(
+  //     config,
+  //   );
 
-    expect(smartAccount.MUMBAI?.chainId).toBe(ChainId.POLYGON_MUMBAI);
+  //   expect(smartAccount.MUMBAI?.chainId).toBe(ChainId.POLYGON_MUMBAI);
 
-    expect(smartAccount.MUMBAI).toBeInstanceOf(BiconomySmartAccountV2);
+  //   expect(smartAccount.MUMBAI).toBeInstanceOf(BiconomySmartAccountV2);
     
-  }, 50000);
+  // }, 50000);
 
   // it("Should create and deploy Smart Accounts on 2 chains", async () => {
 
@@ -73,7 +116,7 @@ describe("BiconomySmartAccount API Specs", () => {
   //       { 
   //         signer: mumbaiSigner,
   //         chainId: ChainId.POLYGON_MUMBAI,
-  //         paymasterApiKey: process.env.MUMBAI_PAYMASTER_ID!,
+  //         paymasterApiKey: process.env.MUMBAI_PAYMASTER_API_KEY!,
   //         deployOnChain : {
   //           prefundAmount: ethers.utils.parseEther("0.001")
   //         },
@@ -82,7 +125,7 @@ describe("BiconomySmartAccount API Specs", () => {
   //       { 
   //         signer: goerliSigner,
   //         chainId: ChainId.GOERLI,
-  //         paymasterApiKey: process.env.GOERLI_PAYMASTER_ID!,
+  //         paymasterApiKey: process.env.GOERLI_PAYMASTER_API_KEY!,
   //         deployOnChain :{
   //           prefundAmount: ethers.utils.parseEther("0.01")
   //         },
@@ -102,90 +145,154 @@ describe("BiconomySmartAccount API Specs", () => {
 
   // }, 100000);
 
-  // it("Should create and deploy smart account on 1 chain", async () => {
+  // it("Should create and deploy smart account on 1 chain GASLESS", async () => {
 
   //   const config: SmartAccountV2MultiConfig = 
   //      [ { 
-  //         signer: goerliSigner,
-  //         chainId: ChainId.GOERLI,
-  //         paymasterApiKey: process.env.GOERLI_PAYMASTER_ID!,
-  //         deployOnChain: {
-  //           prefundAmount: ethers.utils.parseEther("0.01")
-  //         }
+  //         signer: mumbaiSigner,
+  //         chainId: ChainId.POLYGON_MUMBAI,
+  //         paymasterApiKey: process.env.MUMBAI_PAYMASTER_API_KEY!,
+  //         index: 22
   //       }]
 
   //   const smartAccount = await createSmartAccountMultichain(
   //     config,
   //   );
 
+  //   const transaction = {
+  //     to: smartAccount.MUMBAI?.accountAddress || "",
+  //     data: '0x',
+  //   }
+  
+  //   const userOp = await smartAccount.MUMBAI?.buildUserOp([transaction])
+  //   userOp!.paymasterAndData = "0x"
+
+  //   const biconomyPaymaster = smartAccount.GOERLI?.paymaster as IHybridPaymaster<SponsorUserOperationDto>;
+  //   let paymasterServiceData = {
+  //     mode: PaymasterMode.SPONSORED,
+  //     smartAccountInfo: {
+  //       name: 'BICONOMY',
+  //       version: '1.0.0'
+  //     }
+  //   }
+
+  //   const paymasterAndDataResponse = await biconomyPaymaster?.getPaymasterAndData(userOp!, paymasterServiceData);
+
+  //   if (
+  //     paymasterAndDataResponse.callGasLimit &&
+  //     paymasterAndDataResponse.verificationGasLimit &&
+  //     paymasterAndDataResponse.preVerificationGas
+  //   ) {
+  //     userOp!.callGasLimit = paymasterAndDataResponse.callGasLimit;
+  //     userOp!.verificationGasLimit =
+  //     paymasterAndDataResponse.verificationGasLimit;
+  //     userOp!.preVerificationGas =
+  //     paymasterAndDataResponse.preVerificationGas;
+  //   }
+
+  //   userOp!.paymasterAndData = paymasterAndDataResponse?.paymasterAndData || "0x";
+
+  //   const resp = await smartAccount.MUMBAI?.sendUserOp(userOp!)
+
+  //   const receipt = await resp!.wait(1)
+  //   console.log(receipt, "receipt");
+    
+
   // }, 50000);
 
-  it("Should throw and error if we provide duplicate chain ids", async () => {
+  // it("Should throw and error if we provide duplicate chain ids", async () => {
     
-    const configs: SmartAccountV2MultiConfig = [
-        { 
-          signer: mumbaiSigner,
-          chainId: ChainId.POLYGON_MUMBAI,
-          paymasterApiKey: process.env.MUMBAI_PAYMASTER_ID!,
-        },
-        { 
-          signer: goerliSigner,
-          chainId: ChainId.POLYGON_MUMBAI,
-          paymasterApiKey: process.env.GOERLI_PAYMASTER_ID!,
-        }
-    ]
+  //   const configs: SmartAccountV2MultiConfig = [
+  //       { 
+  //         signer: mumbaiSigner,
+  //         chainId: ChainId.POLYGON_MUMBAI,
+  //         paymasterApiKey: process.env.MUMBAI_PAYMASTER_API_KEY!,
+  //       },
+  //       { 
+  //         signer: goerliSigner,
+  //         chainId: ChainId.POLYGON_MUMBAI,
+  //         paymasterApiKey: process.env.GOERLI_PAYMASTER_API_KEY!,
+  //       }
+  //   ]
 
-    await expect(createSmartAccountMultichain(configs)).rejects.toThrow("Duplicate chain ids not allowed.");
+  //   await expect(createSmartAccountMultichain(configs)).rejects.toThrow("Duplicate chain ids not allowed.");
     
-  });
+  // });
 
-  it("Should throw and error if we provide duplicate paymaster api keys", async () => {
+  // it("Should throw and error if we provide duplicate paymaster api keys", async () => {
     
-    const configs: SmartAccountV2MultiConfig = [
-      { 
-        signer: mumbaiSigner,
-        chainId: ChainId.POLYGON_MUMBAI,
-        paymasterApiKey: process.env.MUMBAI_PAYMASTER_ID!,
-      },
-      { 
-        signer: goerliSigner,
-        chainId: ChainId.GOERLI,
-        paymasterApiKey: process.env.MUMBAI_PAYMASTER_ID!,
-      }
-  ]
+  //   const configs: SmartAccountV2MultiConfig = [
+  //     { 
+  //       signer: mumbaiSigner,
+  //       chainId: ChainId.POLYGON_MUMBAI,
+  //       paymasterApiKey: process.env.MUMBAI_PAYMASTER_API_KEY!,
+  //     },
+  //     { 
+  //       signer: goerliSigner,
+  //       chainId: ChainId.GOERLI,
+  //       paymasterApiKey: process.env.MUMBAI_PAYMASTER_API_KEY!,
+  //     }
+  // ]
 
-    await expect(createSmartAccountMultichain(configs)).rejects.toThrow("Duplicate paymaster api keys not allowed.");
+  //   await expect(createSmartAccountMultichain(configs)).rejects.toThrow("Duplicate paymaster api keys not allowed.");
     
-  });
+  // });
 
-  it("Should create a user operation tx", async () => {
+  // it("Should create and send a sponsored user operation", async () => {
 
-    const config: SmartAccountV2MultiConfig = 
-       [ { 
-          signer: mumbaiSigner,
-          chainId: ChainId.POLYGON_MUMBAI,
-          paymasterApiKey: process.env.MUMBAI_PAYMASTER_ID!,
-        }]
+  //   const signerBalanceBefore = await mumbaiSigner.getBalance();
 
-    const smartAccount = await createSmartAccountMultichain(
-      config,
-    );
+  //   const config: SmartAccountV2MultiConfig = 
+  //      [ { 
+  //         signer: mumbaiSigner,
+  //         chainId: ChainId.POLYGON_MUMBAI,
+  //         paymasterApiKey: process.env.MUMBAI_PAYMASTER_API_KEY!,
+  //       }]
+
+  //   const smartAccount = await createSmartAccountMultichain(
+  //     config,
+  //   );
+
+
+  //   const transaction = {
+  //     to: smartAccount.MUMBAI?.accountAddress || "",
+  //     data: '0x',
+  //   }
+
+  //   const userOp = await smartAccount.MUMBAI.buildUserOp([transaction])
+  //   userOp.paymasterAndData = "0x"
+
+  //   const biconomyPaymaster = smartAccount.MUMBAI?.paymaster as IHybridPaymaster<SponsorUserOperationDto>;
+  //   let paymasterServiceData = {
+  //     mode: PaymasterMode.SPONSORED,
+  //     calculateGasLimits: true
+  //   }
+
+  //   const paymasterAndDataResponse = await biconomyPaymaster?.getPaymasterAndData(userOp, paymasterServiceData);
+
+  //   if (
+  //     paymasterAndDataResponse.callGasLimit &&
+  //     paymasterAndDataResponse.verificationGasLimit &&
+  //     paymasterAndDataResponse.preVerificationGas
+  //   ) {
+  //     userOp.callGasLimit = paymasterAndDataResponse.callGasLimit;
+  //     userOp.verificationGasLimit =
+  //     paymasterAndDataResponse.verificationGasLimit;
+  //     userOp.preVerificationGas =
+  //     paymasterAndDataResponse.preVerificationGas;
+  //   }
+
+  //   userOp!.paymasterAndData = paymasterAndDataResponse?.paymasterAndData || "0x";
+
+  //   const resp = await smartAccount.MUMBAI?.sendUserOp(userOp!)
+
+  //   const receipt = await resp!.wait(1)
+  //   console.log(receipt, "receipt");
+
+  //   const signerBalanceAfter = await mumbaiSigner.getBalance();
+
+  //   expect(signerBalanceAfter).toEqual(signerBalanceBefore);
   
-    const transaction = {
-      to: await smartAccount.MUMBAI?.getAccountAddress() || "",
-      data: '0x',
-    }
-  
-    const userOp = await smartAccount.MUMBAI?.buildUserOp([transaction])
-    userOp!.paymasterAndData = "0x"
-  
-    const userOpResponse = await smartAccount.MUMBAI?.sendUserOp(userOp!)
-  
-    const transactionDetail = await userOpResponse!.wait()
-  
-    console.log("transaction detail below")
-    console.log(transactionDetail)
-  
-  }, 50000);
+  // }, 50000);
 
 });

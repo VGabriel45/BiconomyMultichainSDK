@@ -4,9 +4,9 @@
  */
 
 import { BiconomySmartAccountV2, DEFAULT_ENTRYPOINT_ADDRESS } from "@biconomy/account"
-import { DEFAULT_MULTICHAIN_MODULE, MultiChainValidationModule } from "@biconomy/modules";
+import { DEFAULT_ECDSA_OWNERSHIP_MODULE, DEFAULT_MULTICHAIN_MODULE, ECDSAOwnershipValidationModule } from "@biconomy/modules";
 import { IBundler, Bundler } from '@biconomy/bundler'
-import { BiconomyPaymaster, IHybridPaymaster, SponsorUserOperationDto } from '@biconomy/paymaster'
+import { BiconomyPaymaster, IHybridPaymaster, PaymasterMode, SponsorUserOperationDto } from '@biconomy/paymaster'
 import { ethers } from "ethers";
 
 import {ChainId, SmartAccountV2Config, SmartAccountV2MultiConfig} from './types/CreateSmartAccountConfig';
@@ -33,13 +33,13 @@ const createSmartAccount = async (config: SmartAccountV2Config) => {
     const signer: ethers.Signer = config.signer;
     validateSmartAccountConfig(config);
 
-    let module: MultiChainValidationModule, bundler: IBundler, paymaster: IHybridPaymaster<SponsorUserOperationDto>, biconomySmartAccount: BiconomySmartAccountV2;
+    let module: ECDSAOwnershipValidationModule, bundler: IBundler, biconomySmartAccount: BiconomySmartAccountV2, paymaster: IHybridPaymaster<SponsorUserOperationDto> | undefined;
 
     try {
         console.info(`Initializing module with address: ${DEFAULT_MULTICHAIN_MODULE}`);
-        module = await MultiChainValidationModule.create({
+        module = await ECDSAOwnershipValidationModule.create({
             signer,
-            moduleAddress: DEFAULT_MULTICHAIN_MODULE
+            moduleAddress: DEFAULT_ECDSA_OWNERSHIP_MODULE
         })
     } catch (error) {
         (`Error on initializing module: ${error}`); 
@@ -57,13 +57,15 @@ const createSmartAccount = async (config: SmartAccountV2Config) => {
         throw new Error(`Error on initializing bundler: ${error}`);
     }
    
-    try {
-        console.info(`Initializing paymaster with url: https://paymaster.biconomy.io/api/v1/${config.chainId}/${config.paymasterApiKey}`);
-        paymaster = new BiconomyPaymaster({
-            paymasterUrl: `https://paymaster.biconomy.io/api/v1/${config.chainId}/${config.paymasterApiKey}`,
-        })
-    } catch (error) {
-        throw new Error(`Error on initializing paymaster: ${error}`);
+    if(config.paymasterApiKey){
+        try {
+            console.info(`Initializing paymaster with url: https://paymaster.biconomy.io/api/v1/${config.chainId}/${config.paymasterApiKey}`);
+            paymaster = new BiconomyPaymaster({
+                paymasterUrl: `https://paymaster.biconomy.io/api/v1/${config.chainId}/${config.paymasterApiKey}`,
+            })
+        } catch (error) {
+            throw new Error(`Error on initializing paymaster: ${error}`);
+        }
     }
   
     try {
@@ -86,10 +88,8 @@ const createSmartAccount = async (config: SmartAccountV2Config) => {
     } catch (error) {
         throw new Error(`Error on initializing biconomySmartAccount: ${error}`);
     }
-
-    await biconomySmartAccount.init();
     const accountAddress = await biconomySmartAccount.getAccountAddress();
-    console.info(`Smart account instance created for chain ${config.chainId} with address: ${await biconomySmartAccount.getAccountAddress()}`);
+    console.info(`Counter factual address on chain id ${config.chainId} is ${await biconomySmartAccount.getAccountAddress()}`);
     
     if(config.deployOnChain){
         const prefundAmount = config.deployOnChain.prefundAmount;
@@ -97,8 +97,14 @@ const createSmartAccount = async (config: SmartAccountV2Config) => {
         console.log(`Smart account with address ${accountAddress} at chaid id ${config.chainId} is deployed: ${isDeployed}`);
         if(!isDeployed){
             console.log('Deploying smart account...');
-            await prefundSmartAccount(signer, prefundAmount, biconomySmartAccount);
-            await sendEmptyTx(biconomySmartAccount);
+            if(paymaster !== undefined){
+                console.log('Sending gasless tx through paymaster...');
+                await sendGaslessEmptyTx(biconomySmartAccount);
+            } else {
+                await prefundSmartAccount(signer, prefundAmount, biconomySmartAccount);
+                await sendEmptyTx(biconomySmartAccount);
+            }
+            console.log(`Smart Account deployed at ${biconomySmartAccount.accountAddress}`);
         } else {
             console.log(`Smart account with address ${accountAddress} already deployed on chain id ${config.chainId}`);
         }
@@ -131,13 +137,11 @@ export const createSmartAccountMultichain = async (configs: SmartAccountV2MultiC
     });
 
     const resolvedPromises = await Promise.all(promises);
-    const createdSmartAccount = {
-        MUMBAI: resolvedPromises.find((account) => account.chainId === ChainId.POLYGON_MUMBAI),
-        GOERLI: resolvedPromises.find((account) => account.chainId === ChainId.GOERLI),
+    return {
+        MUMBAI: resolvedPromises.find((account) => account.chainId === ChainId.POLYGON_MUMBAI)!,
+        GOERLI: resolvedPromises.find((account) => account.chainId === ChainId.GOERLI)!,
     }
-    return createdSmartAccount;
 }
-
 /**
  * Prefunds a Smart Account with a specified amount.
  * 
@@ -161,6 +165,41 @@ async function prefundSmartAccount(signer: ethers.Signer, prefundAmount: ethers.
     await tx.wait(5);
 
     return tx;
+}
+
+/**
+ * Sends an empty transaction using the paymaster to pay for the gas.
+ * 
+ * @example
+ * await sendGaslessEmptyTx(smartAccount);
+ * 
+ * @param smartAccount - The Smart Account to send the empty transaction to.
+ */
+async function sendGaslessEmptyTx(smartAccount: BiconomySmartAccountV2) {
+    const accountAddr = await smartAccount.getAccountAddress();
+    const transaction = {
+        to: accountAddr,
+        data: '0x',
+    }
+
+    const userOp = await smartAccount.buildUserOp([transaction])
+    
+    const biconomyPaymaster = smartAccount.paymaster as IHybridPaymaster<SponsorUserOperationDto>;
+    let paymasterServiceData = {
+        mode: PaymasterMode.SPONSORED,
+        calculateGasLimits: true
+    }
+    
+    const paymasterAndDataResponse = await biconomyPaymaster.getPaymasterAndData(userOp, paymasterServiceData);
+    
+    userOp.paymasterAndData = paymasterAndDataResponse?.paymasterAndData || "0x";
+
+    const userOpResponse = await smartAccount.sendUserOp(userOp)
+    
+    const transactionDetail = await userOpResponse.wait()
+  
+    console.log("transaction detail below")
+    console.log(transactionDetail)
 }
 
 /**

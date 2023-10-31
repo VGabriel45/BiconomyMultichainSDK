@@ -14,9 +14,6 @@ export const validateSmartAccountConfig = (config: SmartAccountV2Config) => {
     if (!config.chainId) {
         throw new Error("Chain ID is required.");
     }
-    if (!config.paymasterApiKey) {
-        throw new Error("Paymaster API KEY is required.");
-    }
 };
 
 /**
@@ -39,8 +36,13 @@ const checkDuplicateChainIds = (configs: SmartAccountV2MultiConfig) => {
 };
 
 const checkDuplicatePaymasterIds = (configs: SmartAccountV2MultiConfig) => {
-    const paymasterIds = configs.map(config => config.paymasterApiKey);
-    if(new Set(paymasterIds).size !== paymasterIds.length) {
+    let paymasterApiKeys = configs.map(config => {
+        if(config.paymasterApiKey !== undefined || config.paymasterApiKey !== null){
+            return config.paymasterApiKey;
+        }
+    });
+    paymasterApiKeys = paymasterApiKeys.filter((item) => item !== undefined);
+    if(new Set(paymasterApiKeys).size !== paymasterApiKeys.length) {
         throw new Error("Duplicate paymaster api keys not allowed.");
     }
 };
